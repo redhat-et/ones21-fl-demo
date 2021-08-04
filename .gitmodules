@@ -1,0 +1,3 @@
+[submodule "federated-learning-lib"]
+	path = federated-learning-lib
+	url = https://github.com/IBM/federated-learning-lib
