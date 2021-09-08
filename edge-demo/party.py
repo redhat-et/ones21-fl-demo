@@ -8,6 +8,8 @@ import yaml
 import boto3
 import botocore
 
+import paho.mqtt.client as mqtt
+
 from time import sleep
 
 from ibmfl.party.party import Party
@@ -27,12 +29,11 @@ working_dir = "./workdir"
 local_config_file = os.path.join(working_dir, config_file)
 model_file = os.environ['MODEL_FILE_KEY']
 local_model_file = os.path.join(working_dir, model_file)
+mqtt_notification_topic = ""
+data_path = ""
+data_type = ""
 
-if __name__ == '__main__':
-    """
-    Main function can be used to create an application out \
-    of our Aggregator class which could be interactive
-    """
+def run_party():
     s3.download_file(bucket, config_file, local_config_file)
     if not os.path.isfile(config_file):
         logger.debug("config file '{}' does not exist".format(local_config_file))
@@ -43,8 +44,10 @@ if __name__ == '__main__':
     f = open(local_config_file)
     config_dict = yaml.load(f, Loader=yaml.FullLoader)
     f.close()
-    print(config_dict)
     config_dict['model']['spec']['model_definition'] = local_model_file
+    # if data_path is set in MQTT, use it here 
+    if data_path != "" and data_type != "":
+        config_dict["data"]["info"][data_type] = data_path
 
     f = open(local_config_file, "w")
     yaml.dump(config_dict, f)
@@ -73,3 +76,32 @@ if __name__ == '__main__':
         sleep(1)
 
     p.stop()
+
+def on_connect(client, userdata, flags, rc):
+    print("Connection code: {0}".format(str(rc)))
+    client.subscribe(mqtt_notification_topic)
+
+
+def on_message(client, userdata, msg):
+    print("Message received from: " + msg.topic + " payload:" + str(msg.payload))
+    msg_decode =str(msg.payload.decode("utf-8","ignore"))
+    msg_json = json.loads(msg_decode)
+    data_path = msg_json["path"]
+    data_type = msg_json["type"]
+    run_party()
+
+if __name__ == '__main__':
+    """
+    Main function can be used to create an application out \
+    of our Aggregator class which could be interactive
+    """
+    try:
+        mqtt_notification_topic = os.environ['MQTT_TOPIC']
+        client = mqtt.Client("fl_party_client")  
+        client.on_connect = on_connect  
+        client.on_message = on_message  
+        client.connect('127.0.0.1', 1883)
+        client.loop_forever()
+
+    except KeyError: 
+        run_party()
