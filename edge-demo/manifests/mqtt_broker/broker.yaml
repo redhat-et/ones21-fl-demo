@@ -26,8 +26,8 @@ spec:
     spec:
       containers:
       - name: mosquitto
-        image: docker.io/eclipse-mosquitto:latest
-        imagePullPolicy: Always
+        image: docker.io/eclipse-mosquitto:1.6.15
+        imagePullPolicy: IfNotPresent
         ports:
             - containerPort: 1883
               protocol: TCP
