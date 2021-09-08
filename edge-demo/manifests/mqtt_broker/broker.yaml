@@ -8,7 +8,6 @@ data:
 kind: ConfigMap
 metadata:
   name: mosquitto-config
-  namespace: edge-demo
 ---
 apiVersion: apps/v1
 kind: Deployment
