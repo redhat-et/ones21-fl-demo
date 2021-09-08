@@ -14,6 +14,7 @@ RUN pip3 install  -r requirements.txt
 RUN pip3 install federated-learning-lib/federated_learning_lib-1.0.5-py3-none-any.whl
 RUN pip3 install awscli
 RUN pip3 install boto3
+RUN pip3 install paho-mqtt
 RUN rm -rf $(pip3 cache dir)
 ADD edge-demo/aggregator.py aggregator.py
 ADD edge-demo/party.py party.py
