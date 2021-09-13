@@ -54,7 +54,7 @@ def run_party():
     f.close()
 
     p = Party(config_file=local_config_file)
-    commands = ['START', 'REGISTER', 'SAVE', 'EVAL']
+    commands = ['START', 'REGISTER', 'SAVE', 'EVAL', 'STOP']
     # Loop over commands passed by runner
     for command in commands:
         if command.lower() == ('START').lower():

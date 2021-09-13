@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: aggregator
+  name: aggregator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: aggregator
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: aggregator
+    spec:
+      hostNetwork: true
+      containers:
+      - args:
+        - aggregator.py
+        command:
+        - python
+        env:
+        - name: BUCKET
+          value: ones21-demo
+        - name: AGG_CONFIG_FILE_KEY
+          value: config_agg.yml
+        - name: PARTY_CONFIG_FILE_KEY
+          value: config_party.yml
+        - name: MODEL_FILE_KEY
+          value: compiled_keras.h5
+        image: quay.io/oglok/ibm-fl-lib:latest
+        imagePullPolicy: Always
+        name: ibm-fl-lib
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /root/.aws/
+          name: aws-creds
+        - mountPath: /app/workdir/
+          name: workdir
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      securityContext: {}
+      volumes:
+      - name: aws-creds
+        secret:
+          secretName: aws-creds
+      - name: workdir
+        hostPath:
+          path: /HOME/ones21-fl-demo/workdir/      
